@@ -34,7 +34,6 @@ public class DefaultThreadPool implements ThreadPool {
             return;
         }
 
-        initWorkers(workNum);
         for (Worker worker : workerList) {
             worker.start();
         }
@@ -74,7 +73,7 @@ public class DefaultThreadPool implements ThreadPool {
         if(taskList != null){
             synchronized (taskList){
                 taskList.addLast(task);
-                taskList.notifyAll();
+                taskList.notify();
             }
         }
     }

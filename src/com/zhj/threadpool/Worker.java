@@ -8,7 +8,7 @@ import java.util.LinkedList;
  */
 public class Worker implements Runnable {
     //线程运行状态
-    protected boolean running = true;
+    protected boolean running = false;
 
     //任务列表
     protected LinkedList<Task> taskList;
@@ -22,6 +22,7 @@ public class Worker implements Runnable {
     //启动工作线程
     public void start() {
         if (thread != null) {
+            running = true;
             thread.start();
         }
     }
@@ -31,30 +32,34 @@ public class Worker implements Runnable {
         thread.interrupt();
     }
 
-    public void setTaskList(LinkedList<Task> taskList){
+    public void setTaskList(LinkedList<Task> taskList) {
         this.taskList = taskList;
     }
 
     @Override
     public void run() {
-        while (running){
-            Task task = null;
-            synchronized (taskList){
-                System.out.println(thread.getName() + " 获取到了锁");
-                while (taskList.isEmpty()){
+        while (running) {
+            synchronized (taskList) {
+                while (taskList.isEmpty()) {
                     try {
                         taskList.wait();
                     } catch (InterruptedException e) {
                         thread.interrupt();
+                        running = false;
                         return;
                     }
                 }
-
-                task = taskList.removeFirst();
-                if(task != null){
-                    task.excute();
-                }
             }
+
+            Task task = null;
+            synchronized (taskList) {
+                    task = taskList.removeFirst();
+            }
+
+            if (task != null) {
+                task.excute();
+            }
+
         }
     }
 
